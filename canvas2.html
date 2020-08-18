@@ -1,0 +1,177 @@
+<html>
+<head> 
+<meta charset="utf-8"> 
+</head>
+<body onload="checkCookie()">
+
+<canvas id="myCanvas" width="1000" height="500" style="border:1px solid #000000;" onclick="drawstatus(event)" onmousemove="show_coords(event)">
+
+
+</canvas>
+<input type="button" id="line" value="line" onclick="button(this)">
+<input type="button" id="circle" value="circle" onclick="button(this)">
+<input type="button" id="rectangle" value="rectangle" onclick="button(this)">
+<input type="button" id="save" value="save" onclick="save()">
+<input type="file" id="readfile" value="readfile">
+<p id="status"></p>
+<p id="drawing"></p>
+<p id="coords"></p>
+<p id="cookie"></p>
+<script>
+
+var c=document.getElementById("myCanvas");
+var ctx=c.getContext("2d");
+var status="line"
+var drawing="off"
+var l=[]
+var l2=[]
+document.getElementById("status").innerHTML="使用txt输入输出数据";
+document.getElementById("cookie").innerHTML=document.cookie;
+
+function save(){
+cvalue=""
+for (var i=0;i<l.length;i++){
+    for (var j=0;j<l[i].length;j++){
+	if(j==0){
+	    cvalue+=l[i][j]+"."		
+	}
+	else if(j==4){
+	    cvalue+=String(l[i][j])+"?"	
+	}
+	else{
+	    cvalue+=String(l[i][j])+","	
+	}
+	}
+}
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(cvalue));
+  element.setAttribute('download', "hello.txt");
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+
+
+
+const input = document.querySelector('input[type=file]')
+
+input.addEventListener('change', ()=>{
+    const reader = new FileReader()
+    reader.readAsText(input.files[0],'utf8') // input.files[0]为第一个文件
+    reader.onload = ()=>{
+	l=[]
+	l3=[]
+    s=""
+	  for (var i=0;i<reader.result.length;i++){
+		    if(reader.result[i]=="."){
+			    l3.push(s)
+				s=""
+			}
+			
+			else if(reader.result[i]==","){
+			    l3.push(parseInt(s))
+				s=""
+			}
+			
+			else if(reader.result[i]=="?"){
+			    l3.push(parseInt(s))
+				l.push(l3)
+				l3=[]
+				s=""
+			}
+			
+			else{
+			    s+=reader.result[i]
+			}
+
+		}// reader.result为获取结果
+		renew()
+    }
+}, false)
+
+
+
+function button(x){
+	status=x.value
+	document.getElementById("status").innerHTML=l;
+}
+
+function drawstatus(event){
+    if(drawing=="on"){
+	    drawing="off"
+		document.getElementById("drawing").innerHTML=drawing;
+		l2.push(event.screenX-8)
+		l2.push(event.screenY-8)
+		l.push(l2)
+		renew()
+	}
+	else if(drawing=="off"){
+	    drawing="on"
+		l2=[status,event.screenX-8,event.screenY-8]
+		document.getElementById("drawing").innerHTML=drawing;
+		
+	}
+	
+}
+
+function show_coords(event){
+	var x=event.screenX;
+	var y=event.screenY;
+	document.getElementById("coords").innerHTML="X coords: "+x+", Y coords: "+y;
+	if(drawing=="on"){
+	renew()
+	ctx.beginPath();
+	if(l2[0]=="line"){
+	ctx.moveTo(l2[1],l2[2]);
+    ctx.lineTo(x-8,y-8);
+    ctx.stroke();
+	}
+	
+	else if(l2[0]=="circle"){
+	ctx.arc(l2[1],l2[2],Math.sqrt(Math.pow((l2[1]-x+8),2)+Math.pow((l2[2]-y+8),2)),0,2*Math.PI);
+    ctx.stroke();
+	}
+	
+	else if(l2[0]=="rectangle"){
+	ctx.rect(l2[1],l2[2],x-8-l2[1],y-8-l2[2]); 
+    ctx.stroke();
+	}
+	
+	
+	}
+	
+}
+
+
+function renew(){
+    ctx.clearRect(0,0,1000,500)
+	for (var i=0;i<l.length;i++){
+	    ctx.beginPath();	
+        if(l[i][0]=="line"){
+        		
+        ctx.moveTo(l[i][1],l[i][2]);
+        ctx.lineTo(l[i][3],l[i][4]);
+        ctx.stroke();
+		}
+		
+		else if(l[i][0]=="circle"){	
+        
+        ctx.arc(l[i][1],l[i][2],Math.sqrt(Math.pow((l[i][1]-l[i][3]),2)+Math.pow((l[i][2]-l[i][4]),2)),0,2*Math.PI);
+        ctx.stroke();
+		}
+		
+		else if(l[i][0]=="rectangle"){
+        		
+        ctx.rect(l[i][1],l[i][2],l[i][3]-l[i][1],l[i][4]-l[i][2]); 
+        ctx.stroke();
+		}
+    }
+}
+
+</script>
+</body>
+</html>
